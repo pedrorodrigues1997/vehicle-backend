@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  emqx:
+    image: emqx/emqx:5.4.0
+    container_name: emqx
+    restart: always
+    ports:
+      - "1883:1883"    # MQTT TCP
+      - "18083:18083"  # EMQX Dashboard
+    volumes:
+      - ./emqx-configs/cluster.hocon:/opt/emqx/data/configs/cluster.hocon
