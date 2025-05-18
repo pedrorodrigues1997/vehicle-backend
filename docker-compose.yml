@@ -1,8 +1,7 @@
-version: "3.9"
 
 services:
   emqx:
-    image: emqx/emqx:5.4.0
+    image: emqx/emqx:5.9.0
     container_name: emqx
     restart: always
     ports:
@@ -10,3 +9,41 @@ services:
       - "18083:18083"  # EMQX Dashboard
     volumes:
       - ./emqx-configs/cluster.hocon:/opt/emqx/data/configs/cluster.hocon
+
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg17
+    container_name: timescaledb
+    environment:
+      POSTGRES_PASSWORD: 123QWEasd
+      POSTGRES_USER: postgres
+      POSTGRES_DB: telemetrydb
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - backend-network
+
+  #  backend:
+  #    image: vehicle-backend:latest
+  #    container_name: vehicle-backend
+  #    depends_on:
+  #      - timescaledb
+  #    environment:
+  #      SPRING_DATASOURCE_URL: jdbc:postgresql://timescaledb:5432/telemetrydb
+  #      SPRING_DATASOURCE_USERNAME: postgres
+  #      SPRING_DATASOURCE_PASSWORD: 123QWEasd
+  #    ports:
+  #      - "8080:8080"
+  #    restart: unless-stopped
+  #    networks:
+  #      - backend-network
+
+
+volumes:
+  timescale-data:
+
+networks:
+  backend-network:

@@ -55,7 +55,7 @@ public class MqttAuthController {
         if(!passwordMatcher){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(createResponseForBroker(EMQXResponses.deny));
+                    .body(createResponseForBroker(EMQXResponses.ignore));
         }
 
         return ResponseEntity
