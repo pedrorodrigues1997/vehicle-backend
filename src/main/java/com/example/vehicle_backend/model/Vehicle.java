@@ -2,6 +2,7 @@ package com.example.vehicle_backend.model;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -21,6 +22,9 @@ public class Vehicle {
     private String model;
     private String manufacturer;
     private String battery;
+    private String firmwareVersion;
+    private String hardwareId;
+
     private boolean isOnMission;
     private LocalDateTime registeredAt;
 
@@ -34,6 +38,10 @@ public class Vehicle {
 
     public String getVin() {
         return vin;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setVin(String vin) {
@@ -55,6 +63,24 @@ public class Vehicle {
     public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
+
+    public String getFirmwareVersion() {
+        return firmwareVersion;
+    }
+
+    public void setFirmwareVersion(String firmwareVersion) {
+        this.firmwareVersion = firmwareVersion;
+    }
+
+    public String getHardwareId() {
+        return hardwareId;
+    }
+
+    public void setHardwareId(String hardwareId) {
+        this.hardwareId = hardwareId;
+    }
+
+
 
     public String getBattery() {
         return battery;
@@ -92,12 +118,12 @@ public class Vehicle {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Vehicle vehicle = (Vehicle) o;
-        return isOnMission == vehicle.isOnMission && Objects.equals(id, vehicle.id) && Objects.equals(vin, vehicle.vin) && Objects.equals(model, vehicle.model) && Objects.equals(manufacturer, vehicle.manufacturer) && Objects.equals(battery, vehicle.battery) && Objects.equals(registeredAt, vehicle.registeredAt) && Objects.equals(mqttToken, vehicle.mqttToken);
+        return isOnMission == vehicle.isOnMission && Objects.equals(id, vehicle.id) && Objects.equals(vin, vehicle.vin) && Objects.equals(model, vehicle.model) && Objects.equals(manufacturer, vehicle.manufacturer) && Objects.equals(battery, vehicle.battery) && Objects.equals(firmwareVersion, vehicle.firmwareVersion) && Objects.equals(hardwareId, vehicle.hardwareId) && Objects.equals(registeredAt, vehicle.registeredAt) && Objects.equals(mqttToken, vehicle.mqttToken);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, vin, model, manufacturer, battery, isOnMission, registeredAt, mqttToken);
+        return Objects.hash(id, vin, model, manufacturer, battery, firmwareVersion, hardwareId, isOnMission, registeredAt, mqttToken);
     }
 
     @Override
@@ -108,6 +134,8 @@ public class Vehicle {
                 ", model='" + model + '\'' +
                 ", manufacturer='" + manufacturer + '\'' +
                 ", battery='" + battery + '\'' +
+                ", firmwareVersion='" + firmwareVersion + '\'' +
+                ", hardwareId='" + hardwareId + '\'' +
                 ", isOnMission=" + isOnMission +
                 ", registeredAt=" + registeredAt +
                 ", mqttToken='" + mqttToken + '\'' +

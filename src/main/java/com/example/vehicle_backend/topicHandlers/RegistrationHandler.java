@@ -1,14 +1,26 @@
 package com.example.vehicle_backend.topicHandlers;
 
+import com.example.vehicle_backend.dto.VehicleRegistrationRequest;
+import com.example.vehicle_backend.model.Vehicle;
 import com.example.vehicle_backend.repositories.VehicleRepository;
+import com.example.vehicle_backend.services.RegisterService;
+import com.example.vehicle_backend.services.TelemetryService;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
+@Component
 public class RegistrationHandler implements MqttMessageHandler{
 
-    private final VehicleRepository vehicleRepository;
+    private final RegisterService registerService;
 
-    public RegistrationHandler(VehicleRepository vehicleRepository) {
-        this.vehicleRepository = vehicleRepository;
+    public RegistrationHandler(RegisterService registerService) {
+        this.registerService = registerService;
     }
 
 
@@ -16,26 +28,25 @@ public class RegistrationHandler implements MqttMessageHandler{
     public void handle(String topic, MqttMessage message) {
         String payload = new String(message.getPayload());
         System.out.println("Registration request received: " + payload);
-
-        // Parse payload
-        // TODO: Validate/store vehicle, generate credentials
-
-        // Simulate sending credentials back
-        String vehicleId = extractVehicleId(payload); // implement this
-        String responseTopic = "vehicle/registration/response/" + vehicleId;
-        String responsePayload = String.format("{\"username\": \"%s\", \"password\": \"%s\"}", vehicleId, "testpass");
-
+        try {
+            registerService.processRegister(payload);
+        }catch (IllegalArgumentException e){
+            System.out.println("Vehicle failed to register with cause: " + e.getMessage());
+        }
 
     }
 
-    private String extractVehicleId(String payload) {
-        // Basic string parsing or use a JSON library like Jackson
-        // Here, assuming payload contains "vehicle_id": "veh-123"
-        int idx = payload.indexOf("vehicle_id");
-        if (idx == -1) return "unknown";
-        int start = payload.indexOf("\"", idx + 12) + 1;
-        int end = payload.indexOf("\"", start);
-        return payload.substring(start, end);
+    private static Vehicle getVehicle(VehicleRegistrationRequest validatedReq, String hashedToken) {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setVin(validatedReq.getVin());
+        vehicle.setModel(validatedReq.getModel());
+        vehicle.setManufacturer(validatedReq.getManufacturer());
+        vehicle.setMqttToken(hashedToken);
+        vehicle.setHardwareId(validatedReq.getHardwareId());
+        vehicle.setRegisteredAt(LocalDateTime.ofInstant(Instant.ofEpochSecond(validatedReq.getTimestamp()), ZoneId.systemDefault()));
+        vehicle.setFirmwareVersion(validatedReq.getFirmwareVersion());
+        vehicle.setBattery("100");
+        return vehicle;
     }
 
 

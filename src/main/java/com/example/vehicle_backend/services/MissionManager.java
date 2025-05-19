@@ -4,6 +4,7 @@ import com.example.vehicle_backend.enums.MissionStatus;
 import com.example.vehicle_backend.model.Mission;
 import com.example.vehicle_backend.repositories.MissionRepository;
 import com.example.vehicle_backend.topicHandlers.MissionHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -19,11 +20,13 @@ public class MissionManager {
     private final Map<Long, MissionHandler> activeMissions = new ConcurrentHashMap<>();
     private final MissionRepository missionRepository;
     private final MqttClient mqttClient;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    public MissionManager(MissionRepository missionRepository, MqttClient mqttClient) {
+
+    public MissionManager(MissionRepository missionRepository, MqttClient mqttClient, ObjectMapper objectMapper) {
         this.missionRepository = missionRepository;
         this.mqttClient = mqttClient;
+        this.objectMapper = objectMapper;
     }
 
     @PostConstruct
@@ -44,7 +47,9 @@ public class MissionManager {
 
         MissionHandler handler = activeMissions.get(missionId);
         if (handler != null) {
-            handler.handleVehicleResponse(vehicleId, message);
+            if(handler.handleVehicleResponse(vehicleId, message)){
+                unregisterMissionHandler(missionId);
+            }
         } else {
             System.out.println("No handler found for mission: " + missionId);
         }
@@ -52,7 +57,7 @@ public class MissionManager {
 
 
     public void registerMissionHandler(Long missionId, Mission mission) {
-        MissionHandler handler = new MissionHandler(mission, missionRepository, mqttClient);
+        MissionHandler handler = new MissionHandler(mission, missionRepository, mqttClient, objectMapper);
         activeMissions.put(missionId, handler);
     }
 
@@ -69,17 +74,5 @@ public class MissionManager {
         }
         return false;
     }
-
-
-    public boolean stopMission(Long missionId) {
-        MissionHandler handler = activeMissions.get(missionId);
-        if (handler != null) {
-           // handler.sendStopCommand();
-            return true;
-        }
-        return false;
-    }
-
-
 
 }

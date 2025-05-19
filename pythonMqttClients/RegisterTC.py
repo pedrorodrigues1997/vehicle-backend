@@ -7,13 +7,13 @@ BROKER = "localhost"  # or your broker IP
 PORT = 1883           # listener port (change to your no-auth listener port if different)
 
 # Use a username with the "reg_user_" prefix to match your ACL rules
-USERNAME = "vehicle_registration"
-PASSWORD = "123QWEasd"
+USERNAME = "reg_user"
+PASSWORD = "reg_password"
 CLIENT_ID = "reg_client_123"
 
 # Topics
-##REGISTER_TOPIC = "vehicle/registration/request"
-REGISTER_TOPIC = "vehicles/car-002/telemetry"
+REGISTER_TOPIC = "vehicle/registration/request"
+##REGISTER_TOPIC = "vehicles/car-002/telemetry"##
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -36,9 +36,13 @@ def main():
 
     # Sample registration payload
     registration_data = {
-        "vehicle_id": "veh123",
-        "timestamp": int(time.time()),
-        "status": "request_registration"
+        "vin": "car-003",
+        "model": "Model S",
+        "manufacturer": "Tesla",
+        "firmwareVersion": "v10.2.1",
+        "hardwareId": "HW-12345",
+        "secretToken": "password123",
+        "timestamp": int(time.time())
     }
     payload = json.dumps(registration_data)
 

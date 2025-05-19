@@ -1,0 +1,32 @@
+# This file is generated. Do not edit.
+# The configs are results of online config changes from UI/API/CLI.
+# To persist configs in this file, copy the content to etc/base.hocon.
+authentication = [
+  {
+    backend = http
+    body {
+      password = "${password}"
+      username = "${username}"
+    }
+    connect_timeout = "15s"
+    enable_pipelining = 100
+    headers {content-type = "application/json"}
+    max_inactive = "10s"
+    mechanism = password_based
+    method = post
+    pool_size = 8
+    request_timeout = "5s"
+    ssl {enable = false, verify = verify_peer}
+    url = "http://host.docker.internal:8080/api/mqtt/auth"
+  },
+  {
+    backend = built_in_database
+    mechanism = password_based
+    password_hash_algorithm {name = sha256, salt_position = suffix}
+    user_id_type = username
+  }
+]
+log {
+  console {}
+  file {}
+}

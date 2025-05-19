@@ -4,6 +4,7 @@ package com.example.vehicle_backend.model;
 import com.example.vehicle_backend.enums.MissionStatus;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,34 +36,32 @@ public class Mission {
     @Enumerated(EnumType.STRING)
     private MissionStatus status;
 
-    @Column(name = "start_time")
-    private OffsetDateTime startTime;
-
     @Column(name = "end_time")
-    private OffsetDateTime endTime;
+    private LocalDateTime endTime;
 
-    @ElementCollection
-    private List<String> assignedVehicles;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "mission_vehicle_data", joinColumns = @JoinColumn(name = "mission_id"))
+    private List<VehicleMissionData> vehicleMissionDataList = new ArrayList<>();
+
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
-    private OffsetDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "isActive")
     private boolean isActive;
 
-    public Mission(Long missionId, String missionName, String missionDescription, String goal, List<TelemetryData.Location> waypoints, MissionStatus status, OffsetDateTime startTime, OffsetDateTime endTime, List<String> assignedVehicles, OffsetDateTime createdAt, OffsetDateTime updatedAt, boolean isActive) {
+    public Mission(Long missionId, String missionName, String missionDescription, String goal, List<TelemetryData.Location> waypoints, MissionStatus status, LocalDateTime endTime, List<VehicleMissionData> vehicleMissionDataList, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
         this.missionId = missionId;
         this.missionName = missionName;
         this.missionDescription = missionDescription;
         this.goal = goal;
         this.waypoints = waypoints;
         this.status = status;
-        this.startTime = startTime;
         this.endTime = endTime;
-        this.assignedVehicles = assignedVehicles;
+        this.vehicleMissionDataList = vehicleMissionDataList;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isActive = isActive;
@@ -130,43 +129,46 @@ public class Mission {
         this.status = status;
     }
 
-    public OffsetDateTime getStartTime() {
-        return startTime;
-    }
 
-    public void setStartTime(OffsetDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public OffsetDateTime getEndTime() {
+    public LocalDateTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(OffsetDateTime endTime) {
+    public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
-    public List<String> getAssignedVehicles() {
-        return assignedVehicles;
+
+    public List<VehicleMissionData> getVehicleMissionDataList() {
+        return vehicleMissionDataList;
     }
 
-    public void setAssignedVehicles(List<String> assignedVehicles) {
-        this.assignedVehicles = assignedVehicles;
+    public void setVehicleMissionDataList(List<VehicleMissionData> vehicleMissionDataList) {
+        this.vehicleMissionDataList = vehicleMissionDataList;
     }
 
-    public OffsetDateTime getCreatedAt() {
+    public void addVehicleMissionData(List<String> vehicleIds) {
+        for (String vin : vehicleIds) {
+            VehicleMissionData vmd = new VehicleMissionData();
+            vmd.setVehicleId(vin);
+            vmd.setStatus(MissionStatus.PENDING);
+            this.vehicleMissionDataList.add(vmd);
+        }
+    }
+
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(OffsetDateTime createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public OffsetDateTime getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(OffsetDateTime updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -175,12 +177,12 @@ public class Mission {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Mission mission = (Mission) o;
-        return isActive == mission.isActive && Objects.equals(missionId, mission.missionId) && Objects.equals(missionName, mission.missionName) && Objects.equals(missionDescription, mission.missionDescription) && Objects.equals(goal, mission.goal) && Objects.equals(waypoints, mission.waypoints) && status == mission.status && Objects.equals(startTime, mission.startTime) && Objects.equals(endTime, mission.endTime) && Objects.equals(assignedVehicles, mission.assignedVehicles) && Objects.equals(createdAt, mission.createdAt) && Objects.equals(updatedAt, mission.updatedAt);
+        return isActive == mission.isActive && Objects.equals(missionId, mission.missionId) && Objects.equals(missionName, mission.missionName) && Objects.equals(missionDescription, mission.missionDescription) && Objects.equals(goal, mission.goal) && Objects.equals(waypoints, mission.waypoints) && status == mission.status && Objects.equals(endTime, mission.endTime) && Objects.equals(vehicleMissionDataList, mission.vehicleMissionDataList) && Objects.equals(createdAt, mission.createdAt) && Objects.equals(updatedAt, mission.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(missionId, missionName, missionDescription, goal, waypoints, status, startTime, endTime, assignedVehicles, createdAt, updatedAt, isActive);
+        return Objects.hash(missionId, missionName, missionDescription, goal, waypoints, status, endTime, vehicleMissionDataList, createdAt, updatedAt, isActive);
     }
 
     @Override
@@ -192,9 +194,8 @@ public class Mission {
                 ", goal='" + goal + '\'' +
                 ", waypoints=" + waypoints +
                 ", status=" + status +
-                ", startTime=" + startTime +
                 ", endTime=" + endTime +
-                ", assignedVehicles=" + assignedVehicles +
+                ", vehicleMissionDataList=" + vehicleMissionDataList +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", isActive=" + isActive +

@@ -37,6 +37,8 @@ public class MissionController {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
 
+        //TODO DO the payload checks here aswell, check if cars is in mission
+
         Mission mission = toMission(request);
         Mission savedMission = missionRepository.save(mission);
 
@@ -51,10 +53,12 @@ public class MissionController {
         Mission mission = new Mission();
         mission.setMissionName(request.getMissionName());
         mission.setMissionDescription(request.getMissionDescription());
-        mission.setAssignedVehicles(request.getAssignedVehicles());
         mission.setGoal(request.getGoal());
         mission.setWaypoints(request.getWaypoints());
         mission.setStatus(MissionStatus.PENDING);
+        //Creating a individual vehicle mission data for each VIN
+        mission.addVehicleMissionData(request.getAssignedVehicles());
+
         return mission;
     }
 }
