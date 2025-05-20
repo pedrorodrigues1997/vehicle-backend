@@ -5,13 +5,14 @@ services:
     container_name: emqx
     restart: always
     environment:
-      - EMQX_NODE_NAME=emqx@127.0.0.1
+      - EMQX_NODE_NAME=emqx@emqx
     ports:
       - "1883:1883"    # MQTT TCP
       - "18083:18083"  # EMQX Dashboard
     volumes:
-      - ./emqx-config:/opt/emqx/etc
-      - ./emqx-data:/opt/emqx/data
+      - ./emqx-config/acl.conf:/opt/emqx/etc/acl.conf:ro
+      - ./emqx-config/cluster.hocon:/opt/emqx/data/configs/cluster.hocon:ro
+
 
 
   timescaledb:
