@@ -1,8 +1,8 @@
-package com.example.vehicle_backend.dto;
+package com.example.vehicle_backend.dto.RestRequests;
 
 import java.util.Objects;
 
-public class MqttAuthRequest {
+public class RESTMqttAuthRequest {
 
     private String username;
     private String password;
@@ -29,7 +29,7 @@ public class MqttAuthRequest {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        MqttAuthRequest that = (MqttAuthRequest) o;
+        RESTMqttAuthRequest that = (RESTMqttAuthRequest) o;
         return Objects.equals(username, that.username) && Objects.equals(password, that.password);
     }
 

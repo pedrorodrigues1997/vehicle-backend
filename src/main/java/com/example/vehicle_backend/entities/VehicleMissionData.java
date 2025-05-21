@@ -1,4 +1,4 @@
-package com.example.vehicle_backend.model;
+package com.example.vehicle_backend.entities;
 
 
 import com.example.vehicle_backend.enums.MissionStatus;
@@ -18,7 +18,7 @@ public class VehicleMissionData {
     private LocalDateTime lastUpdateTime;
 
     @Embedded
-    private TelemetryData.Location location;
+    private Location location;
 
     private int speed;
 
@@ -41,11 +41,11 @@ public class VehicleMissionData {
         this.vehicleId = vehicleId;
     }
 
-    public TelemetryData.Location getLocation() {
+    public Location getLocation() {
         return location;
     }
 
-    public void setLocation(TelemetryData.Location location) {
+    public void setLocation(Location location) {
         this.location = location;
     }
 

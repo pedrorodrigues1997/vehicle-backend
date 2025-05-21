@@ -1,8 +1,7 @@
-package com.example.vehicle_backend.model;
+package com.example.vehicle_backend.entities;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -21,7 +20,6 @@ public class Vehicle {
 
     private String model;
     private String manufacturer;
-    private String battery;
     private String firmwareVersion;
     private String hardwareId;
 
@@ -81,15 +79,6 @@ public class Vehicle {
     }
 
 
-
-    public String getBattery() {
-        return battery;
-    }
-
-    public void setBattery(String battery) {
-        this.battery = battery;
-    }
-
     public boolean isOnMission() {
         return isOnMission;
     }
@@ -118,12 +107,12 @@ public class Vehicle {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Vehicle vehicle = (Vehicle) o;
-        return isOnMission == vehicle.isOnMission && Objects.equals(id, vehicle.id) && Objects.equals(vin, vehicle.vin) && Objects.equals(model, vehicle.model) && Objects.equals(manufacturer, vehicle.manufacturer) && Objects.equals(battery, vehicle.battery) && Objects.equals(firmwareVersion, vehicle.firmwareVersion) && Objects.equals(hardwareId, vehicle.hardwareId) && Objects.equals(registeredAt, vehicle.registeredAt) && Objects.equals(mqttToken, vehicle.mqttToken);
+        return isOnMission == vehicle.isOnMission && Objects.equals(id, vehicle.id) && Objects.equals(vin, vehicle.vin) && Objects.equals(model, vehicle.model) && Objects.equals(manufacturer, vehicle.manufacturer) && Objects.equals(firmwareVersion, vehicle.firmwareVersion) && Objects.equals(hardwareId, vehicle.hardwareId) && Objects.equals(registeredAt, vehicle.registeredAt) && Objects.equals(mqttToken, vehicle.mqttToken);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, vin, model, manufacturer, battery, firmwareVersion, hardwareId, isOnMission, registeredAt, mqttToken);
+        return Objects.hash(id, vin, model, manufacturer, firmwareVersion, hardwareId, isOnMission, registeredAt, mqttToken);
     }
 
     @Override
@@ -133,7 +122,6 @@ public class Vehicle {
                 ", vin='" + vin + '\'' +
                 ", model='" + model + '\'' +
                 ", manufacturer='" + manufacturer + '\'' +
-                ", battery='" + battery + '\'' +
                 ", firmwareVersion='" + firmwareVersion + '\'' +
                 ", hardwareId='" + hardwareId + '\'' +
                 ", isOnMission=" + isOnMission +

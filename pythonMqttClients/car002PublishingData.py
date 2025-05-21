@@ -10,19 +10,19 @@ cars = [
     {
         "client_id": "car-001",
         "username": "car-001",
-        "password": "123TestPwd",
+        "password": "password123",
         "vin": "car-001"
     },
     {
         "client_id": "car-002",
         "username": "car-002",
-        "password": "123TestPwd",
+        "password": "password123",
         "vin": "car-002"
     },
     {
         "client_id": "car-003",
         "username": "car-003",
-        "password": "123TestPwd",
+        "password": "password123",
         "vin": "car-003"
     }
 ]
@@ -40,8 +40,6 @@ def generate_telemetry_data(vin):
         "lat": round(random.uniform(40.0, 41.0), 6),
         "lng": round(random.uniform(-75.0, -73.0), 6),
         "speed": round(random.uniform(20, 100), 2),
-        "engineTemp": round(random.uniform(70, 110), 2),
-        "fuelLevel": round(random.uniform(10, 100), 2),
         "timestamp": int(time.time() * 1000)
     }
 

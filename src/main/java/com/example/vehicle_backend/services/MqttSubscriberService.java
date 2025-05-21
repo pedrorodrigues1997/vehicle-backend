@@ -24,10 +24,10 @@ public class MqttSubscriberService {
     @Autowired
     private RegistrationHandler registerHandler;
     @Autowired
+    private VehicleStatusHandler statusHandler;
+    @Autowired
     private MqttClient mqttClient;
 
-    public MqttSubscriberService() {
-    }
 
     @PostConstruct
     public void init() {
@@ -35,8 +35,7 @@ public class MqttSubscriberService {
 
             mqttClient.subscribe(TELEMETRY_TOPIC, telemetryHandler::handle);
             mqttClient.subscribe(REGISTRATION_TOPIC, registerHandler::handle);
-            //  subscribeWithHandler(VEHICLE_STATUS_TOPIC, new VehicleStatusHandler(vehicleRepository));
-           // subscribeWithHandler(MISSION_TOPIC, new MissionHandler(vehicleRepository));
+            mqttClient.subscribe(VEHICLE_STATUS_TOPIC, statusHandler::handle);
 
 
         } catch (MqttException e) {

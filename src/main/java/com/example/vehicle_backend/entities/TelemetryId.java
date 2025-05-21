@@ -1,4 +1,4 @@
-package com.example.vehicle_backend.model;
+package com.example.vehicle_backend.entities;
 
 import java.io.Serializable;
 import java.time.Instant;

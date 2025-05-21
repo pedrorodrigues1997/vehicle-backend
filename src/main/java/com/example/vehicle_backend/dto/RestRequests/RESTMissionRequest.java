@@ -1,24 +1,23 @@
-package com.example.vehicle_backend.dto;
+package com.example.vehicle_backend.dto.RestRequests;
 
-import com.example.vehicle_backend.model.TelemetryData;
+import com.example.vehicle_backend.entities.Location;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
-public class MissionRequest {
-    @NotBlank
+public class RESTMissionRequest {
+    @NotBlank(message = "Mission name is required")
     private String missionName;
     @NotBlank
     private String missionDescription;
-    @NotBlank
+    @NotBlank(message = "Goal is required")
     private String goal;
     @NotEmpty(message = "Waypoints cannot be empty")
     @Valid
-    private List<TelemetryData.Location> waypoints;
-    @NotEmpty(message = "Waypoints cannot be empty")
+    private List<Location> waypoints;
+    @NotEmpty(message = "Assigned vehicles list cannot be empty")
     @Valid
     private List<String> assignedVehicles;
 
@@ -47,11 +46,11 @@ public class MissionRequest {
         this.goal = goal;
     }
 
-    public List<TelemetryData.Location> getWaypoints() {
+    public List<Location> getWaypoints() {
         return waypoints;
     }
 
-    public void setWaypoints(List<TelemetryData.Location> waypoints) {
+    public void setWaypoints(List<Location> waypoints) {
         this.waypoints = waypoints;
     }
 

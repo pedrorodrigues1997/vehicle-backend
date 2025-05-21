@@ -1,11 +1,12 @@
 package com.example.vehicle_backend.topicHandlers;
 
-import com.example.vehicle_backend.dto.VehicleMissionStatusPayload;
+import com.example.vehicle_backend.dto.MqttResponses.MQTTVehicleMissionStatus;
 import com.example.vehicle_backend.enums.MissionStatus;
-import com.example.vehicle_backend.model.Mission;
-import com.example.vehicle_backend.model.TelemetryData;
-import com.example.vehicle_backend.model.VehicleMissionData;
+import com.example.vehicle_backend.entities.Location;
+import com.example.vehicle_backend.entities.Mission;
+import com.example.vehicle_backend.entities.VehicleMissionData;
 import com.example.vehicle_backend.repositories.MissionRepository;
+import com.example.vehicle_backend.validators.CommonDataValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -16,12 +17,9 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class MissionHandler {
 
@@ -30,6 +28,9 @@ public class MissionHandler {
     private final MissionRepository missionRepository;
     private final MqttClient mqttClient;
     private final ObjectMapper objectMapper;
+
+
+
     public MissionHandler(Mission mission, MissionRepository missionRepository, MqttClient mqttClient, ObjectMapper objectMapper) {
         this.mission = mission;
         this.missionRepository = missionRepository;
@@ -40,7 +41,6 @@ public class MissionHandler {
 
     public void sendStartCommand() {
         try {
-
 
             for (VehicleMissionData vmd : mission.getVehicleMissionDataList()) {
                 String vin = vmd.getVehicleId();
@@ -55,6 +55,7 @@ public class MissionHandler {
 
         } catch (Exception e) {
             System.err.println("[MissionHandler] Failed to send start command: " + e.getMessage());
+            failMissionDueToError();
             e.printStackTrace();
         }
     }
@@ -64,12 +65,9 @@ public class MissionHandler {
         try {
             String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
             System.out.println("[MissionHandler] Response from " + vehicleId + ": " + payload);
-            VehicleMissionStatusPayload statusPayload = objectMapper.readValue(payload, VehicleMissionStatusPayload.class);
+            MQTTVehicleMissionStatus statusPayload = objectMapper.readValue(payload, MQTTVehicleMissionStatus.class);
 
-
-            if (statusPayload.getVin() == null || !statusPayload.getVin().equals(vehicleId)) {
-                throw new IllegalArgumentException("Missing or invalid vin");
-            }
+            validateVehicleStatusPayload(statusPayload);
             Mission mission = missionRepository.findById(statusPayload.getMissionId())
                     .orElseThrow(() -> new IllegalArgumentException("Mission not found: " + statusPayload.getMissionId()));
 
@@ -80,7 +78,7 @@ public class MissionHandler {
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Vehicle " + vehicleId + " is not assigned to mission " + mission.getMissionId()));
 
-            //TODO Validate statusPayload first
+            CommonDataValidator.validateStatusProgression(vehicleData.getStatus(), statusPayload.getStatus());
 
 
             vehicleData.setStatus(statusPayload.getStatus());
@@ -89,7 +87,7 @@ public class MissionHandler {
             vehicleData.setLocation(statusPayload.getLocation());
 
 
-            mission.setUpdatedAt(LocalDateTime.ofInstant(Instant.ofEpochSecond(statusPayload.getTimestamp()), ZoneId.systemDefault()));
+            mission.setUpdatedAt(LocalDateTime.now(ZoneId.systemDefault()));
 
 
             boolean isFinished = updateOverallMissionStatus(mission);
@@ -100,14 +98,23 @@ public class MissionHandler {
             missionRepository.save(mission);
             return isFinished;
 
-
-
         } catch (Exception e) {
             System.err.println("[MissionHandler] Error processing vehicle response: " + e.getMessage());
+            failMissionDueToError();
             e.printStackTrace();
         }
 
-        return false;
+        return true;  //If the data is not valid somewhere im assuming the mission failed
+    }
+
+    private static void validateVehicleStatusPayload(MQTTVehicleMissionStatus statusPayload) {
+        CommonDataValidator.validateVIN(statusPayload.getVin());
+        CommonDataValidator.validateTimestamp(statusPayload.getTimestamp());
+        CommonDataValidator.validateLocation(statusPayload.getLocation());
+        CommonDataValidator.validateSpeed(statusPayload.getSpeed());
+        if (statusPayload.getMissionId() == 0) {
+            throw new IllegalArgumentException("Invalid or missing manufacturer.");
+        }
     }
 
     /**
@@ -152,7 +159,7 @@ public class MissionHandler {
         missionData.put("goal", mission.getGoal());
 
         ArrayNode waypointsArray = missionData.putArray("waypoints");
-        for (TelemetryData.Location wp : mission.getWaypoints()) {
+        for (Location wp : mission.getWaypoints()) {
             ObjectNode wpNode = waypointsArray.addObject();
             wpNode.put("latitude", wp.getLat());
             wpNode.put("longitude", wp.getLng());
@@ -161,6 +168,11 @@ public class MissionHandler {
         return mapper.writeValueAsString(root);
     }
 
+    private void failMissionDueToError() {
+        mission.setActive(false);
+        mission.setStatus(MissionStatus.FAILED);
+        missionRepository.save(mission);
+    }
 
     @Override
     public boolean equals(Object o) {

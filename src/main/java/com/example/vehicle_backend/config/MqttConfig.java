@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 public class MqttConfig {
     private static final String brokerUrl = "tcp://localhost:1883";
     private static final String clientId = "backend-subscriber";
+
+
     @Bean
     public MqttClient mqttClient() throws MqttException {
 

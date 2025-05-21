@@ -1,18 +1,18 @@
-package com.example.vehicle_backend.dto;
+package com.example.vehicle_backend.dto.MqttResponses;
 
 import com.example.vehicle_backend.enums.MissionStatus;
-import com.example.vehicle_backend.model.TelemetryData;
+import com.example.vehicle_backend.entities.Location;
 
 import java.util.Objects;
 
-public class VehicleMissionStatusPayload  {
+public class MQTTVehicleMissionStatus {
 
 
     private String vin;
     private long missionId;
     private long timestamp;
     private MissionStatus status;
-    private TelemetryData.Location location;
+    private Location location;
     private int speed;
 
 
@@ -48,11 +48,11 @@ public class VehicleMissionStatusPayload  {
         this.status = status;
     }
 
-    public TelemetryData.Location getLocation() {
+    public Location getLocation() {
         return location;
     }
 
-    public void setLocation(TelemetryData.Location location) {
+    public void setLocation(Location location) {
         this.location = location;
     }
 
@@ -68,7 +68,7 @@ public class VehicleMissionStatusPayload  {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        VehicleMissionStatusPayload that = (VehicleMissionStatusPayload) o;
+        MQTTVehicleMissionStatus that = (MQTTVehicleMissionStatus) o;
         return timestamp == that.timestamp && speed == that.speed && Objects.equals(vin, that.vin) && Objects.equals(missionId, that.missionId) && status == that.status && Objects.equals(location, that.location);
     }
 

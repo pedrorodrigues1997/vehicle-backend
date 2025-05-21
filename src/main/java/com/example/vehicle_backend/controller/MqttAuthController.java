@@ -1,11 +1,11 @@
 package com.example.vehicle_backend.controller;
 
 
-import com.example.vehicle_backend.dto.MqttAuthRequest;
+import com.example.vehicle_backend.dto.RestRequests.RESTMqttAuthRequest;
 import com.example.vehicle_backend.enums.EMQXResponses;
-import com.example.vehicle_backend.model.Vehicle;
+import com.example.vehicle_backend.entities.Vehicle;
 import com.example.vehicle_backend.repositories.VehicleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.vehicle_backend.validators.CommonDataValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,13 +38,24 @@ public class MqttAuthController {
     }
 
     @PostMapping("/auth")
-    public ResponseEntity<?> authentication(@RequestBody MqttAuthRequest request){
+    public ResponseEntity<?> authentication(@RequestBody RESTMqttAuthRequest request){
+
+        try{
+            CommonDataValidator.validateUsername(request.getUsername());
+            CommonDataValidator.validatePassword(request.getPassword());
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(createResponseForBroker(EMQXResponses.ignore));
+        }
+
+
 
         String vin = request.getUsername();
         Optional<Vehicle> vehicleOpt = vehicleRepository.findByVin(vin);
 
         if(vehicleOpt.isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(createResponseForBroker(EMQXResponses.ignore));
         }

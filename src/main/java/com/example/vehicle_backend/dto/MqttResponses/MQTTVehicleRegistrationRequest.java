@@ -1,12 +1,11 @@
-package com.example.vehicle_backend.dto;
+package com.example.vehicle_backend.dto.MqttResponses;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 
 import java.util.Objects;
 
-public class VehicleRegistrationRequest {
+public class MQTTVehicleRegistrationRequest {
 
     @NotBlank
     private String vin;
@@ -78,7 +77,7 @@ public class VehicleRegistrationRequest {
         this.secretToken = secretToken;
     }
 
-    public Long getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
@@ -89,7 +88,7 @@ public class VehicleRegistrationRequest {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        VehicleRegistrationRequest that = (VehicleRegistrationRequest) o;
+        MQTTVehicleRegistrationRequest that = (MQTTVehicleRegistrationRequest) o;
         return Objects.equals(vin, that.vin) && Objects.equals(model, that.model) && Objects.equals(manufacturer, that.manufacturer) && Objects.equals(firmwareVersion, that.firmwareVersion) && Objects.equals(hardwareId, that.hardwareId) && Objects.equals(secretToken, that.secretToken) && Objects.equals(timestamp, that.timestamp);
     }
 

@@ -1,11 +1,10 @@
 package com.example.vehicle_backend.services;
 
-import com.example.vehicle_backend.dto.VehicleRegistrationRequest;
-import com.example.vehicle_backend.model.Vehicle;
+import com.example.vehicle_backend.dto.MqttResponses.MQTTVehicleRegistrationRequest;
+import com.example.vehicle_backend.entities.Vehicle;
 import com.example.vehicle_backend.repositories.VehicleRepository;
+import com.example.vehicle_backend.validators.CommonDataValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,68 +34,47 @@ public class RegisterService {
 
     public void processRegister(String payload) throws SecurityException {
 
-        VehicleRegistrationRequest req;
+        MQTTVehicleRegistrationRequest req;
         try {
-            req = objectMapper.readValue(payload, VehicleRegistrationRequest.class);
+            req = objectMapper.readValue(payload, MQTTVehicleRegistrationRequest.class);
         } catch (Exception e) {
             throw new IllegalArgumentException("Malformed JSON: " + e.getMessage(), e);
         }
 
-        //Assuming that for this project VIN is always similar to car-00n
-        if (isBlank(req.getVin()) || !VIN_PATTERN.matcher(req.getVin()).matches()) {
-            throw new IllegalArgumentException("Invalid or missing VIN. Expected pattern: car-XXX");
-        }
 
-        if (isBlank(req.getModel())) {
+        if (isValidRegisterRequest(req)) {
+            String hashedToken = passwordEncoder.encode(req.getSecretToken());
+            Vehicle vehicle = getVehicle(req, hashedToken);
+
+            vehicleRepository.save(vehicle);
+            System.out.println("Vehicle registered successfully: " + vehicle.getVin());
+
+        }
+    }
+
+    private boolean isValidRegisterRequest(MQTTVehicleRegistrationRequest req) {
+        CommonDataValidator.validateVIN(req.getVin());
+        CommonDataValidator.validateTimestamp(req.getTimestamp());
+        CommonDataValidator.validatePassword(req.getSecretToken());
+        if (CommonDataValidator.isBlank(req.getModel())) {
             throw new IllegalArgumentException("Invalid or missing model.");
         }
-
-        if (isBlank(req.getManufacturer())) {
+        if (CommonDataValidator.isBlank(req.getManufacturer())) {
             throw new IllegalArgumentException("Invalid or missing manufacturer.");
         }
-
-        if (isBlank(req.getHardwareId())) {
+        if (CommonDataValidator.isBlank(req.getHardwareId())) {
             throw new IllegalArgumentException("Invalid or missing hardwareId.");
         }
 
-        if (req.getTimestamp() == null) {
-            throw new IllegalArgumentException("Missing timestamp.");
-        }
-
-        if (!isTimestampValid(req.getTimestamp())) {
-            throw new IllegalArgumentException("Timestamp out of acceptable range.");
-        }
-
-        if (isBlank(req.getSecretToken()) || req.getSecretToken().length() < 8) {
-            throw new IllegalArgumentException("Weak or missing secret token.");
-        }
-
-
         Optional<Vehicle> existing = vehicleRepository.findByVin(req.getVin());
-        if(existing.isPresent()){
+        if (existing.isPresent()) {
             throw new IllegalArgumentException("Vehicle already registered with this VIN.");
         }
 
-
-        String hashedToken = passwordEncoder.encode(req.getSecretToken());
-
-        Vehicle vehicle = getVehicle(req, hashedToken);
-
-        vehicleRepository.save(vehicle);
-        System.out.println("Vehicle registered successfully: " + vehicle.getVin());
-
+        return true;
     }
 
-    private boolean isTimestampValid(Long timestamp) {
-        long now = Instant.now().getEpochSecond();
-        return Math.abs(now - timestamp) <= ALLOWED_TIME_DIFF;
-    }
-
-    private boolean isBlank(String str) {
-        return str == null || str.trim().isEmpty();
-    }
-
-    private static Vehicle getVehicle(VehicleRegistrationRequest validatedReq, String hashedToken) {
+    private static Vehicle getVehicle(MQTTVehicleRegistrationRequest validatedReq, String hashedToken) {
         Vehicle vehicle = new Vehicle();
         vehicle.setVin(validatedReq.getVin());
         vehicle.setModel(validatedReq.getModel());
@@ -105,7 +83,6 @@ public class RegisterService {
         vehicle.setHardwareId(validatedReq.getHardwareId());
         vehicle.setRegisteredAt(LocalDateTime.ofInstant(Instant.ofEpochSecond(validatedReq.getTimestamp()), ZoneId.systemDefault()));
         vehicle.setFirmwareVersion(validatedReq.getFirmwareVersion());
-        vehicle.setBattery("100");
         return vehicle;
     }
 }

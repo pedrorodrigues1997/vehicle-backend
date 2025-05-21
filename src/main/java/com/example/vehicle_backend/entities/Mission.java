@@ -1,15 +1,13 @@
-package com.example.vehicle_backend.model;
+package com.example.vehicle_backend.entities;
 
 
 import com.example.vehicle_backend.enums.MissionStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "missions")
@@ -31,7 +29,7 @@ public class Mission {
 
     @ElementCollection
     @CollectionTable(name = "mission_waypoints", joinColumns = @JoinColumn(name = "mission_id"))
-    private List<TelemetryData.Location> waypoints = new ArrayList<>();
+    private List<Location> waypoints = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private MissionStatus status;
@@ -53,7 +51,7 @@ public class Mission {
     @Column(name = "isActive")
     private boolean isActive;
 
-    public Mission(Long missionId, String missionName, String missionDescription, String goal, List<TelemetryData.Location> waypoints, MissionStatus status, LocalDateTime endTime, List<VehicleMissionData> vehicleMissionDataList, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
+    public Mission(Long missionId, String missionName, String missionDescription, String goal, List<Location> waypoints, MissionStatus status, LocalDateTime endTime, List<VehicleMissionData> vehicleMissionDataList, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
         this.missionId = missionId;
         this.missionName = missionName;
         this.missionDescription = missionDescription;
@@ -104,11 +102,11 @@ public class Mission {
         this.goal = goal;
     }
 
-    public List<TelemetryData.Location> getWaypoints() {
+    public List<Location> getWaypoints() {
         return waypoints;
     }
 
-    public void setWaypoints(List<TelemetryData.Location> waypoints) {
+    public void setWaypoints(List<Location> waypoints) {
         this.waypoints = waypoints;
     }
 
@@ -143,9 +141,6 @@ public class Mission {
         return vehicleMissionDataList;
     }
 
-    public void setVehicleMissionDataList(List<VehicleMissionData> vehicleMissionDataList) {
-        this.vehicleMissionDataList = vehicleMissionDataList;
-    }
 
     public void addVehicleMissionData(List<String> vehicleIds) {
         for (String vin : vehicleIds) {

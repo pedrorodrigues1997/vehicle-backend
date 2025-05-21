@@ -1,10 +1,8 @@
 package com.example.vehicle_backend.topicHandlers;
 
-import com.example.vehicle_backend.dto.TelemetryDataDTO;
-import com.example.vehicle_backend.model.TelemetryData;
-import com.example.vehicle_backend.repositories.TelemetryDataRepository;
-import com.example.vehicle_backend.repositories.VehicleRepository;
+import com.example.vehicle_backend.dto.MqttResponses.MQTTTelemetryData;
 import com.example.vehicle_backend.services.TelemetryService;
+import com.example.vehicle_backend.validators.CommonDataValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +42,9 @@ public class TelemetryHandler implements MqttMessageHandler {
                 return;
             }
 
-            TelemetryDataDTO telemetryDTO = objectMapper.readValue(payload, TelemetryDataDTO.class);
+            MQTTTelemetryData telemetryDTO = objectMapper.readValue(payload, MQTTTelemetryData.class);
 
-            if (telemetryDTO.getVin() == null || telemetryDTO.getVin().isEmpty()) {
-                System.out.println("Invalid telemetry: missing VIN");
-                return;
-            }
+            CommonDataValidator.validateVIN(telemetryDTO.getVin());
 
             if (!vinFromTopic.equals(telemetryDTO.getVin())) {
                 System.out.printf("VIN mismatch: topic VIN '%s' vs payload VIN '%s'%n", vinFromTopic, telemetryDTO.getVin());

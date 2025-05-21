@@ -1,9 +1,11 @@
 package com.example.vehicle_backend.services;
 
-import com.example.vehicle_backend.dto.TelemetryDataDTO;
-import com.example.vehicle_backend.model.TelemetryData;
+import com.example.vehicle_backend.dto.MqttResponses.MQTTTelemetryData;
+import com.example.vehicle_backend.entities.Location;
+import com.example.vehicle_backend.entities.TelemetryData;
 import com.example.vehicle_backend.repositories.TelemetryDataRepository;
 import com.example.vehicle_backend.repositories.VehicleRepository;
+import com.example.vehicle_backend.validators.CommonDataValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,55 +25,32 @@ public class TelemetryService {
     }
 
 
-    public void processTelemetry(TelemetryDataDTO dto) {
-        // Basic checks
-        if (dto.getVin() == null || dto.getVin().isEmpty()) {
-            throw new IllegalArgumentException("VIN cannot be null or empty");
-        }
+    public void processTelemetry(MQTTTelemetryData dto) {
 
         if (!vehicleRepository.existsByVin(dto.getVin())) {
             throw new IllegalArgumentException("Received telemetry from unregistered vehicle: " + dto.getVin());
         }
-        if (dto.getLat() < -90 || dto.getLat() > 90) {
-            throw new IllegalArgumentException("Invalid latitude");
-        }
-        if (dto.getLng() < -180 || dto.getLng() > 180) {
-            throw new IllegalArgumentException("Invalid longitude");
-        }
 
-        if (!isValidTimestamp(dto.getTimestamp())){
-            throw new IllegalArgumentException("Invalid timestamp");
-        }
+        Location location = new Location();
+        location.setLng(dto.getLng());
+        location.setLat(dto.getLat());
+        CommonDataValidator.validateLocation(location);
+
+        CommonDataValidator.validateTimestamp(dto.getTimestamp());
 
 
-        TelemetryData entity = toEntity(dto);
+        TelemetryData entity = toEntity(dto, location);
         telemetryDataRepository.save(entity);
     }
 
-    private static boolean isValidTimestamp(long timestamp) {
-        Instant now = Instant.now();
-        Instant t = Instant.ofEpochMilli(timestamp);
 
-        if (t.isAfter(now.plusSeconds(30)) || t.isBefore(now.minus(Duration.ofHours(1)))) {
-            System.out.println("Timestamp too far in the future or past: " + timestamp);
-            return false;
-        }
-        return true;
-    }
-
-
-    private TelemetryData toEntity(TelemetryDataDTO dto) {
-        TelemetryData.Location location = new TelemetryData.Location();
-        location.setLat(dto.getLat());
-        location.setLng(dto.getLng());
+    private TelemetryData toEntity(MQTTTelemetryData dto, Location location) {
 
         TelemetryData entity = new TelemetryData();
         entity.setVin(dto.getVin());
         entity.setTimestamp(Instant.ofEpochMilli(dto.getTimestamp()));
         entity.setLocation(location);
         entity.setSpeed(dto.getSpeed());
-        entity.setEngineTemp(dto.getEngineTemp());
-        entity.setFuelLevel(dto.getFuelLevel());
         return entity;
     }
 }
