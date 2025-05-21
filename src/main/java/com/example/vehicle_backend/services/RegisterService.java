@@ -17,9 +17,6 @@ import java.util.regex.Pattern;
 @Service
 public class RegisterService {
 
-    private static final long ALLOWED_TIME_DIFF = 300;
-    private static final Pattern VIN_PATTERN = Pattern.compile("^car-\\d{3}$");
-
     private final VehicleRepository vehicleRepository;
     private PasswordEncoder passwordEncoder;
     private ObjectMapper objectMapper;

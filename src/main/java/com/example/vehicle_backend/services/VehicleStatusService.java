@@ -1,0 +1,75 @@
+package com.example.vehicle_backend.services;
+
+import com.example.vehicle_backend.dto.MqttResponses.MQTTStatusData;
+import com.example.vehicle_backend.dto.MqttResponses.MQTTTelemetryData;
+import com.example.vehicle_backend.entities.Location;
+import com.example.vehicle_backend.entities.TelemetryData;
+import com.example.vehicle_backend.entities.vehicleStatus.VehicleStatusData;
+import com.example.vehicle_backend.repositories.TelemetryDataRepository;
+import com.example.vehicle_backend.repositories.VehicleRepository;
+import com.example.vehicle_backend.repositories.VehicleStatusRepository;
+import com.example.vehicle_backend.validators.CommonDataValidator;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Set;
+
+@Service
+public class VehicleStatusService {
+
+    private final VehicleStatusRepository vehicleStatusRepository;
+    private final VehicleRepository vehicleRepository;
+    private final Validator validator;
+
+    @Autowired
+    public VehicleStatusService(VehicleStatusRepository vehicleStatusRepository, VehicleRepository vehicleRepository) {
+        this.vehicleStatusRepository = vehicleStatusRepository;
+        this.vehicleRepository = vehicleRepository;
+        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
+    }
+
+
+    public void processVehicleStatus(MQTTStatusData dto) {
+
+        if (!vehicleRepository.existsByVin(dto.getVehicleId())) {
+            throw new IllegalArgumentException("Received vehicle status from unregistered vehicle: " + dto.getVehicleId());
+        }
+
+        Set<ConstraintViolation<MQTTStatusData>> violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ConstraintViolation<MQTTStatusData> violation : violations) {
+                sb.append(violation.getPropertyPath()).append(": ").append(violation.getMessage()).append("; ");
+            }
+            throw new IllegalArgumentException("Validation errors: " + sb.toString());
+        }
+
+
+        VehicleStatusData entity = toEntity(dto);
+
+
+        vehicleStatusRepository.save(entity);
+    }
+
+
+    private VehicleStatusData toEntity(MQTTStatusData dto) {
+        VehicleStatusData entity = new VehicleStatusData();
+        entity.setVehicleId(dto.getVehicleId());
+        entity.setTimestamp(dto.getTimestamp());
+        entity.setEngineStatus(dto.getEngineStatus());
+        entity.setEngineOilLevelPercent(dto.getEngineOilLevelPercent());
+        entity.setEngineCheckEngineLight(dto.isEngineCheckEngineLight());
+        entity.setBatteryStatus(dto.getBatteryStatus());
+        entity.setBatteryVoltage(dto.getBatteryVoltage());
+        entity.setTireFrontLeftPsi(dto.getTireFrontLeftPsi());
+        entity.setTireFrontRightPsi(dto.getTireFrontRightPsi());
+        entity.setTireRearLeftPsi(dto.getTireRearLeftPsi());
+        entity.setTireRearRightPsi(dto.getTireRearRightPsi());
+        entity.setBrakeStatus(dto.getBrakeStatus());
+        return entity;
+    }
+}

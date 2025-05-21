@@ -4,13 +4,24 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MqttConfig {
-    private static final String brokerUrl = "tcp://localhost:1883";
-    private static final String clientId = "backend-subscriber";
+
+    @Value("${mqtt.broker-url}")
+    private String brokerUrl;
+
+    @Value("${mqtt.client-id}")
+    private String clientId;
+
+    @Value("${mqtt.username}")
+    private String username;
+
+    @Value("${mqtt.password}")
+    private String password;
 
 
     @Bean
@@ -22,8 +33,8 @@ public class MqttConfig {
         options.setCleanSession(true);
         options.setAutomaticReconnect(true);
         options.setConnectionTimeout(10);
-        options.setUserName("backendapp");
-        options.setPassword("password123".toCharArray());
+        options.setUserName(username);
+        options.setPassword(password.toCharArray());
         client.connect(options);
 
         return client;
