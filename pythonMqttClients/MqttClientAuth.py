@@ -1,9 +1,9 @@
 import paho.mqtt.client as mqtt
 
 vin = "car-002"
-password = "123TestPwd"
+password = "password123"
 
-# MQTT Broker configuration
+
 broker_host = "localhost"
 broker_port = 1883
 

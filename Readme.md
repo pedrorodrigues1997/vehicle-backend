@@ -91,7 +91,7 @@ If for some reason the client disconnects, authentication is of course required 
 
 ### 1. Register a Vehicle
 
-In **pythonMqttClients**, use **RegisterTC.py** to simulate a vehicle registration.
+In **pythonMqttClients**, use **001Register.py** to simulate a vehicle registration.
 
 The backend is subscribed to the following topic
 Vehicles publish registration requests to this topic using the reg_user credentials.
@@ -115,7 +115,7 @@ This is the expected format for a **Register Request**
 
 
 ### 2. Telemetry Data test
-Run **car002PublishingData.py** to simulate telemetry data from multiple cars.
+Run **002TelemetryPublishingData.py** to simulate telemetry data from multiple cars.
 Each car publishes data like:
 
     {
@@ -139,7 +139,37 @@ Stores data into a TimescaleDB hypertable.
 The primary key is a combination of vin and timestamp.
 
 
-### 3. Mission
+
+### 3. Status Data test
+Run **003MultiCarStatusData.py** to simulate status data from multiple cars.
+Each car publishes data like:
+
+    {
+      "vehicleId": "car-001",
+      "timestamp": 1748003863819,
+      "engineStatus": "ERROR",
+      "engineOilLevelPercent": 7.87,
+      "engineCheckEngineLight": false,
+      "batteryStatus": "OK",
+      "batteryVoltage": 13.32,
+      "tireFrontLeftPsi": 27.92,
+      "tireFrontRightPsi": 27.86,
+      "tireRearLeftPsi": 31.26,
+      "tireRearRightPsi": 32.35,
+      "brakeStatus": "ERROR"
+    }
+
+
+#### Topic used by vehicles:
+
+    vehicles/+/status, where the + is the VIN of the car
+
+The Backend subscribes using a wildcard to all status topics.
+Stores data into a TimescaleDB hypertable.
+The primary key is a combination of vin and timestamp.
+
+
+### 4. Mission
 
 To assign a mission to vehicles, use Postman to make a POST request to:
 
@@ -193,7 +223,7 @@ This is the topic the backend uses to publish the mission request for the cars.
     api/requests/mission/+/vehicles/+
                         /missionId   /VIN
 
-I chose this format because it show that it is a request, separates by mission and by vin.
+I chose this format because it shows that it is a request, separates by mission and by vin.
 This way the car clients can be subscribed to the following topic:
     
     Clients are subscribed to: api/requests/mission/+/vehicles/+
@@ -215,3 +245,157 @@ This will depend on the REST Request, but you could start 1-4 missions and see t
 You can see logs in the backend console log and you can see all the values being updated in the database
 
 
+### Mission Report
+
+  The Mission Report Endpoint, handled by **MissionReportController**, can be called with the following path
+
+    /api/reports/missions
+
+No parameter are needed in the Body, just make a GET Request using Postman. 
+The endpoint will return a list of all missions (active or not), all the vehicle information of each assigned vehicle and also the vehicle specific mission data.
+The response is similar to this one
+
+    [
+    {
+        "missionId": 2,
+        "missionName": "Deliver medical supplies12",
+        "missionDescription": "Urgent delivery to hospital",
+        "goal": "Deliver packages to hospital A",
+        "waypoints": [
+            {
+                "lat": 40.712776,
+                "lng": -74.005974
+            },
+            {
+                "lat": 40.713776,
+                "lng": -74.002974
+            }
+        ],
+        "status": "COMPLETED",
+        "vehicleMissionDataList": [
+            {
+                "vehicle": {
+                    "vin": "car-001",
+                    "model": "Model S",
+                    "manufacturer": "Tesla",
+                    "firmwareVersion": "v10.2.1",
+                    "hardwareId": "HW-12345"
+                },
+                "vehicleId": "car-001",
+                "status": "COMPLETED",
+                "lastUpdateTime": "+57362-01-31T15:02:05",
+                "location": {
+                    "lat": 40.708844,
+                    "lng": -74.013332
+                },
+                "speed": 48
+            },
+            {
+                "vehicle": {
+                    "vin": "car-002",
+                    "model": "Model S",
+                    "manufacturer": "Tesla",
+                    "firmwareVersion": "v10.2.1",
+                    "hardwareId": "HW-12345"
+                },
+                "vehicleId": "car-002",
+                "status": "COMPLETED",
+                "lastUpdateTime": "+57362-01-31T19:12:05",
+                "location": {
+                    "lat": 40.72091,
+                    "lng": -74.000443
+                },
+                "speed": 66
+            }
+        ],
+        "createdAt": "2025-05-23T15:01:15.702955",
+        "updatedAt": "2025-05-23T15:03:00.734348",
+        "endTime": "2025-05-23T15:03:00.734348",
+        "active": false
+    },
+    {
+        "missionId": 1,
+        "missionName": "Put out fire in the Hospital",
+        "missionDescription": "Urgent dispatcher to hospital",
+        "goal": "Estinguish Flames",
+        "waypoints": [
+            {
+                "lat": 50.712776,
+                "lng": -60.005974
+            },
+            {
+                "lat": 51.713776,
+                "lng": -61.002974
+            }
+        ],
+        "status": "COMPLETED",
+        "vehicleMissionDataList": [
+            {
+                "vehicle": {
+                    "vin": "car-004",
+                    "model": "Model S",
+                    "manufacturer": "Tesla",
+                    "firmwareVersion": "v10.2.1",
+                    "hardwareId": "HW-12345"
+                },
+                "vehicleId": "car-004",
+                "status": "COMPLETED",
+                "lastUpdateTime": "+57362-02-01T00:15:43",
+                "location": {
+                    "lat": 40.711205,
+                    "lng": -74.001699
+                },
+                "speed": 76
+            },
+            {
+                "vehicle": {
+                    "vin": "car-003",
+                    "model": "Model S",
+                    "manufacturer": "Tesla",
+                    "firmwareVersion": "v10.2.1",
+                    "hardwareId": "HW-12345"
+                },
+                "vehicleId": "car-003",
+                "status": "COMPLETED",
+                "lastUpdateTime": "+57362-01-31T20:05:45",
+                "location": {
+                    "lat": 40.709981,
+                    "lng": -74.005933
+                },
+                "speed": 62
+            }
+        ],
+        "createdAt": "2025-05-23T15:01:03.814966",
+        "updatedAt": "2025-05-23T15:03:18.951961",
+        "endTime": "2025-05-23T15:03:18.951961",
+        "active": false
+    }
+]
+
+
+
+### Suggested Testing
+Use the python scripts inside the folder, pythonMqttClients
+#### Start by Registering vehicles using 001Register.py Modify any parameters in the script, and register the cars you want.
+**Keep in mind that VIN should follow the format car-xxx.**, i chose this format for easier testing and there are validations checking this. 
+
+#### You can test the telemetry data by running 002TelemetryPublishingData.py
+This script will generate telemetry data with the expected format, 3 cars will be sending data with random values. Each car will send data for 60 seconds, in 5 sec intervals. Once the 60 seconds end, the next car starts sending data.
+
+
+#### You can test the Status data by running 003MultiCarStatusData.py
+This script will generate health status data with the expected format, 3 cars will be sending data with random values. Each car will send data for 60 seconds, in 5 sec intervals. Once the 60 seconds end, the next car starts sending data.
+
+
+#### You can test Mission handling by running 004missionSim.py 
+This script will start 4 clients (cars) that will be waiting for the mission start from the backend. 
+When received they will start sending data 15 seconds apart from each other (if multiple cars are selected for the mission).
+Each car will send data every 30 seconds. 
+
+Once this script is running, you can send the mission start request to the backend. You’ve got 4 cars to test with, so it’s totally up to you how you use them:
+
+- one mission with all 4
+- a couple missions with 2 each
+- 4 separate missions with 1 car each
+ 
+Choose whichever combination you want.

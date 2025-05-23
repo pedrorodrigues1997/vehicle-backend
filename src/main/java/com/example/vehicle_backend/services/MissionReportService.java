@@ -7,6 +7,7 @@ import com.example.vehicle_backend.entities.Vehicle;
 import com.example.vehicle_backend.entities.VehicleMissionData;
 import com.example.vehicle_backend.repositories.MissionRepository;
 import com.example.vehicle_backend.repositories.VehicleRepository;
+import com.example.vehicle_backend.validators.CommonDataValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,20 +27,29 @@ public class MissionReportService {
     public List<MissionReportDTO> getMissionReport() {
         List<Mission> missions = missionRepository.findAll();
         List<MissionReportDTO> report = new ArrayList<>();
-
+        List<String> validationErrors = new ArrayList<>();
         for (Mission mission : missions) {
             List<VehicleMissionDataDTO> vehicleDataDTOs = new ArrayList<>();
 
             for (VehicleMissionData vmd : mission.getVehicleMissionDataList()) {
                 Vehicle vehicle = vehicleRepository.findByVin(vmd.getVehicleId())
-                        .orElse(null); // or throw exception or handle missing vehicle case
+                        .orElse(null);
 
                 VehicleMissionDataDTO vmdDTO = new VehicleMissionDataDTO(vmd, vehicle);
                 vehicleDataDTOs.add(vmdDTO);
             }
 
             MissionReportDTO missionDTO = new MissionReportDTO(mission, vehicleDataDTOs);
-            report.add(missionDTO);
+            try {
+                CommonDataValidator.validate(missionDTO);
+                report.add(missionDTO);
+            } catch (IllegalArgumentException e) {
+                validationErrors.add("Mission ID " + mission.getMissionId() + " validation failed: " + e.getMessage());
+            }
+        }
+
+        if (!validationErrors.isEmpty()) {
+            System.err.println("Validation errors found: " + validationErrors);
         }
 
         return report;

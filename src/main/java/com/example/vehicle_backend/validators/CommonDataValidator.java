@@ -5,18 +5,42 @@ import com.example.vehicle_backend.entities.Location;
 import com.example.vehicle_backend.entities.Mission;
 import com.example.vehicle_backend.entities.VehicleMissionData;
 import com.example.vehicle_backend.enums.MissionStatus;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class CommonDataValidator {
     //TODO   Make this a validator for ALL. Instead of for the payload. Faz no aviao, valida cada campo individualmente
     private static final Pattern VIN_PATTERN = Pattern.compile("^car-\\d{3}$");
     private static final long ALLOWED_TIME_DIFF = 60000; //milliseconds
+    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+
+
+    public static <T> void validate(T object) {
+        Set<ConstraintViolation<T>> violations = validator.validate(object);
+
+        if (!violations.isEmpty()) {
+            StringBuilder sb = new StringBuilder("Validation errors: ");
+            for (ConstraintViolation<T> violation : violations) {
+                sb.append(violation.getPropertyPath())
+                        .append(": ")
+                        .append(violation.getMessage())
+                        .append("; ");
+            }
+            throw new IllegalArgumentException(sb.toString());
+        }
+    }
+
+
 
 
     public static void validateTimestamp(long timestamp) {

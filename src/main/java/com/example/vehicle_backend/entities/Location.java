@@ -6,14 +6,12 @@ import jakarta.validation.constraints.*;
 @Embeddable
 public class Location {
 
-    @NotNull
-    @DecimalMin("-90.0")
-    @DecimalMax("90.0")
+    @Min(value = -90, message = "Latitude must be >= -90")
+    @Max(value = 90, message = "Latitude must be <= 90")
     private double lat;
 
-    @NotNull
-    @DecimalMin("-180.0")
-    @DecimalMax("180.0")
+    @Min(value = -90, message = "Longitude must be >= -180")
+    @Max(value = 90, message = "Longitude must be <= 180")
     private double lng;
 
     public double getLat() {

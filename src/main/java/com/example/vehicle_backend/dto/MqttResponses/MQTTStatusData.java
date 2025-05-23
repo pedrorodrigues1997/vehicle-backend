@@ -1,9 +1,7 @@
 package com.example.vehicle_backend.dto.MqttResponses;
 
-import com.example.vehicle_backend.entities.vehicleStatus.HealthStatus;
+import com.example.vehicle_backend.enums.HealthStatus;
 import jakarta.validation.constraints.*;
-
-import java.util.Objects;
 
 
 public class MQTTStatusData {
@@ -11,7 +9,7 @@ public class MQTTStatusData {
     @NotBlank(message = "vehicleId must not be blank")
     private String vehicleId;
 
-    @Positive(message = "timestamp must be a positive Unix epoch millis")
+    @Positive(message = "timestamp must be a positive value represented in millis")
     private long timestamp;
 
     @NotNull(message = "engineStatus must be provided")

@@ -4,15 +4,26 @@ import com.example.vehicle_backend.entities.Location;
 import com.example.vehicle_backend.entities.Vehicle;
 import com.example.vehicle_backend.entities.VehicleMissionData;
 import com.example.vehicle_backend.enums.MissionStatus;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
 public class VehicleMissionDataDTO {
+    @NotBlank(message = "Vehicle ID is required")
     private String vehicleId;
+    @NotNull(message = "Status is required")
     private MissionStatus status;
     private LocalDateTime lastUpdateTime;
+    @NotNull(message = "Location is required")
+    @Valid
     private Location location;
+    @Min(value = 0, message = "Speed must be zero or positive")
     private int speed;
+    @NotNull(message = "Vehicle data is required")
+    @Valid
     private VehicleDTO vehicle;
 
     public VehicleMissionDataDTO(VehicleMissionData vmd, Vehicle vehicle) {

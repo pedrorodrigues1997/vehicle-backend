@@ -11,21 +11,23 @@ cars = [
         "client_id": "car-001",
         "username": "car-001",
         "password": "password123",
-        "vin": "car-001"
+        "vehicleId": "car-001"
     },
     {
         "client_id": "car-002",
         "username": "car-002",
         "password": "password123",
-        "vin": "car-002"
+        "vehicleId": "car-002"
     },
     {
         "client_id": "car-003",
         "username": "car-003",
         "password": "password123",
-        "vin": "car-003"
+        "vehicleId": "car-003"
     }
 ]
+
+HEALTH_STATUSES = ["OK", "WARNING", "ERROR"]
 
 def create_client(car):
     client = mqtt.Client(client_id=car["client_id"])
@@ -34,13 +36,20 @@ def create_client(car):
     client.loop_start()
     return client
 
-def generate_telemetry_data(vin):
+def generate_health_telemetry(vehicleId):
     return {
-        "vin": vin,
-        "lat": round(random.uniform(40.0, 41.0), 6),
-        "lng": round(random.uniform(-75.0, -73.0), 6),
-        "speed": round(random.uniform(20, 100), 2),
-        "timestamp": int(time.time() * 1000)
+        "vehicleId": vehicleId,
+        "timestamp": int(time.time() * 1000),
+        "engineStatus": random.choice(HEALTH_STATUSES),
+        "engineOilLevelPercent": round(random.uniform(0, 100), 2),
+        "engineCheckEngineLight": random.choice([True, False]),
+        "batteryStatus": random.choice(HEALTH_STATUSES),
+        "batteryVoltage": round(random.uniform(0, 15), 2),
+        "tireFrontLeftPsi": round(random.uniform(25, 40), 2),
+        "tireFrontRightPsi": round(random.uniform(25, 40), 2),
+        "tireRearLeftPsi": round(random.uniform(25, 40), 2),
+        "tireRearRightPsi": round(random.uniform(25, 40), 2),
+        "brakeStatus": random.choice(HEALTH_STATUSES)
     }
 
 def publish_telemetry(client, topic, telemetry_data):
@@ -57,14 +66,14 @@ def main():
         while True:
             for car in cars:
                 client = create_client(car)
-                topic = f"vehicles/{car['client_id']}/telemetry"
-                print(f"\n Now simulating: {car['client_id']} for 60 seconds")
+                topic = f"vehicles/{car['client_id']}/status"
+                print(f"\nNow simulating: {car['client_id']} for 60 seconds")
 
                 start_time = time.time()
                 while time.time() - start_time < 60:
-                    telemetry = generate_telemetry_data(car["vin"])
+                    telemetry = generate_health_telemetry(car["vehicleId"])
                     publish_telemetry(client, topic, telemetry)
-                    time.sleep(5)  # Send every 5 seconds
+                    time.sleep(5)
 
                 client.loop_stop()
                 client.disconnect()

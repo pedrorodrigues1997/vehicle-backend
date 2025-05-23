@@ -46,6 +46,7 @@ public class VehicleStatusHandler implements MqttMessageHandler{
             }
 
             MQTTStatusData status = objectMapper.readValue(payload, MQTTStatusData.class);
+            System.out.printf("Received Status Data: " + status);
 
             if (!vinFromTopic.equals(status.getVehicleId())) {
                 System.out.printf("VIN mismatch: topic VIN '%s' vs payload VIN '%s'%n", vinFromTopic, status.getVehicleId());

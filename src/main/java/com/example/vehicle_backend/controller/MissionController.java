@@ -39,7 +39,11 @@ public class MissionController {
     public ResponseEntity<?> createMission(@Valid @RequestBody RESTMissionRequest request, BindingResult result) {
 
         if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+            StringBuilder sb = new StringBuilder("Validation errors: ");
+            result.getFieldErrors().forEach(error -> {
+                sb.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
+            });
+            return ResponseEntity.badRequest().body(sb.toString());
         }
 
         Set<String> uniqueVins = new HashSet<>(request.getAssignedVehicles());
@@ -61,12 +65,13 @@ public class MissionController {
         }
 
 
+        System.out.printf("Received Mission Request: " + request);
 
 
         Mission mission = toMission(request);
         missionRepository.save(mission); //To Generate the missionId
         missionManager.registerMissionHandler(mission.getMissionId(), mission);
-        missionManager.startMission(mission.getMissionId());
+        missionManager.startMission(mission.getMissionId()); //Optionally we could leave this for another end point. We could have one to schedule, and one to start
         return ResponseEntity.ok(mission);
     }
 

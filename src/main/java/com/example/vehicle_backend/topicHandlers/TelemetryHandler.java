@@ -43,6 +43,7 @@ public class TelemetryHandler implements MqttMessageHandler {
             }
 
             MQTTTelemetryData telemetryDTO = objectMapper.readValue(payload, MQTTTelemetryData.class);
+            System.out.printf("Received Telemetry Data: " + telemetryDTO);
 
             CommonDataValidator.validateVIN(telemetryDTO.getVin());
 

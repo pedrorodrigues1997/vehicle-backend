@@ -46,7 +46,7 @@ public class MissionManager {
         MissionHandler handler = activeMissions.get(missionId);
         if (handler != null) {
             if(handler.handleVehicleResponse(vehicleId, message)){
-                System.out.println("Mission Ending: " + missionId + "Starting the Unregister process");
+                System.out.println("Mission "+ missionId +" Ending: Starting the Unregister process");
                 unregisterMissionHandler(missionId);
             }
         } else {

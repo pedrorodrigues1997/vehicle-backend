@@ -2,31 +2,32 @@ package com.example.vehicle_backend.dto.MqttResponses;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.util.Objects;
 
 public class MQTTVehicleRegistrationRequest {
 
-    @NotBlank
+    @NotBlank(message = "vehicleId must not be blank")
     private String vin;
 
-    @NotBlank
+    @NotBlank(message = "model must not be blank")
     private String model;
 
-    @NotBlank
+    @NotBlank(message = "manufacturer must not be blank")
     private String manufacturer;
 
-    @NotBlank
+    @NotBlank(message = "firmwareVersion must not be blank")
     private String firmwareVersion;
 
-    @NotBlank
+    @NotBlank(message = "hardwareId must not be blank")
     private String hardwareId;
 
-    @NotBlank
+    @NotBlank(message = "secretToken must not be blank")
     private String secretToken;
 
-    @NotNull
-    private Long timestamp;
+    @Positive(message = "timestamp must be a positive value represented in millis")
+    private long timestamp;
 
 
     public String getVin() {

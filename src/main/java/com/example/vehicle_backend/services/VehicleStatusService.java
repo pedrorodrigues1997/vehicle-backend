@@ -23,13 +23,11 @@ public class VehicleStatusService {
 
     private final VehicleStatusRepository vehicleStatusRepository;
     private final VehicleRepository vehicleRepository;
-    private final Validator validator;
 
     @Autowired
     public VehicleStatusService(VehicleStatusRepository vehicleStatusRepository, VehicleRepository vehicleRepository) {
         this.vehicleStatusRepository = vehicleStatusRepository;
         this.vehicleRepository = vehicleRepository;
-        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
 
@@ -39,19 +37,10 @@ public class VehicleStatusService {
             throw new IllegalArgumentException("Received vehicle status from unregistered vehicle: " + dto.getVehicleId());
         }
 
-        Set<ConstraintViolation<MQTTStatusData>> violations = validator.validate(dto);
-        if (!violations.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (ConstraintViolation<MQTTStatusData> violation : violations) {
-                sb.append(violation.getPropertyPath()).append(": ").append(violation.getMessage()).append("; ");
-            }
-            throw new IllegalArgumentException("Validation errors: " + sb.toString());
-        }
-
+        CommonDataValidator.validate(dto);
+        CommonDataValidator.validateTimestamp(dto.getTimestamp());
 
         VehicleStatusData entity = toEntity(dto);
-
-
         vehicleStatusRepository.save(entity);
     }
 

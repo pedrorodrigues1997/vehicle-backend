@@ -37,14 +37,13 @@ cars = [
 STATUS_FLOW = ["PENDING", "IN_PROGRESS", "IN_PROGRESS", "COMPLETED"]
 
 class VehicleSimulator:
-    def __init__(self, car_config, start_delay_minutes=0):
+    def __init__(self, car_config, start_offset_seconds=0):
         self.client_id = car_config["client_id"]
         self.username = car_config["username"]
         self.password = car_config["password"]
         self.vin = car_config["vin"]
 
-        self.start_delay_seconds = start_delay_minutes * 60
-
+        self.start_offset_seconds = start_offset_seconds
         self.client = mqtt.Client(client_id=self.client_id, protocol=mqtt.MQTTv311)
         self.client.username_pw_set(self.username, self.password)
 
@@ -99,16 +98,13 @@ class VehicleSimulator:
                 threading.Thread(target=self.delayed_status_start, daemon=True).start()
 
     def delayed_status_start(self):
-        if self.start_delay_seconds > 0:
-            print(f"[{self.vin}] Waiting {self.start_delay_seconds} seconds before sending updates.", flush=True)
-            time.sleep(self.start_delay_seconds)
+        if self.start_offset_seconds > 0:
+            print(f"[{self.vin}] Waiting {self.start_offset_seconds}s to start sending updates.", flush=True)
+            time.sleep(self.start_offset_seconds)
         self.send_status_updates()
 
     def send_status_updates(self):
         try:
-            delay = random.uniform(1, 5)  # Optional small delay before first status
-            time.sleep(delay)
-
             while self.running and self.status_index < len(STATUS_FLOW):
                 current_status = STATUS_FLOW[self.status_index]
                 status_topic = f"api/mission/{self.mission_id}/vehicles/{self.vin}"
@@ -130,7 +126,7 @@ class VehicleSimulator:
                     print(f"[{self.vin}] Failed to publish status: {result.rc}", flush=True)
 
                 self.status_index += 1
-                time.sleep(5)  # Time between status updates
+                time.sleep(30)
 
             print(f"[{self.vin}] Mission complete.", flush=True)
             self.running = False
@@ -141,7 +137,8 @@ class VehicleSimulator:
 if __name__ == "__main__":
     simulators = []
     for i, car in enumerate(cars):
-        sim = VehicleSimulator(car, start_delay_minutes=i)
+
+        sim = VehicleSimulator(car, start_offset_seconds=i * 15)
         simulators.append(sim)
 
     for sim in simulators:

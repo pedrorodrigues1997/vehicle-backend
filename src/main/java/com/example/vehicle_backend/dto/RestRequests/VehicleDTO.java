@@ -1,10 +1,14 @@
 package com.example.vehicle_backend.dto.RestRequests;
 
 import com.example.vehicle_backend.entities.Vehicle;
+import jakarta.validation.constraints.NotBlank;
 
 public class VehicleDTO {
+    @NotBlank(message = "VIN is required")
     private String vin;
+    @NotBlank(message = "Model is required")
     private String model;
+    @NotBlank(message = "Manufacturer is required")
     private String manufacturer;
     private String firmwareVersion;
     private String hardwareId;

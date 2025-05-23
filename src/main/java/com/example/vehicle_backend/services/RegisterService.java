@@ -38,6 +38,7 @@ public class RegisterService {
             throw new IllegalArgumentException("Malformed JSON: " + e.getMessage(), e);
         }
 
+        CommonDataValidator.validate(req);
 
         if (isValidRegisterRequest(req)) {
             String hashedToken = passwordEncoder.encode(req.getSecretToken());
@@ -53,15 +54,6 @@ public class RegisterService {
         CommonDataValidator.validateVIN(req.getVin());
         CommonDataValidator.validateTimestamp(req.getTimestamp());
         CommonDataValidator.validatePassword(req.getSecretToken());
-        if (CommonDataValidator.isBlank(req.getModel())) {
-            throw new IllegalArgumentException("Invalid or missing model.");
-        }
-        if (CommonDataValidator.isBlank(req.getManufacturer())) {
-            throw new IllegalArgumentException("Invalid or missing manufacturer.");
-        }
-        if (CommonDataValidator.isBlank(req.getHardwareId())) {
-            throw new IllegalArgumentException("Invalid or missing hardwareId.");
-        }
 
         Optional<Vehicle> existing = vehicleRepository.findByVin(req.getVin());
         if (existing.isPresent()) {

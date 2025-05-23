@@ -1,15 +1,28 @@
 package com.example.vehicle_backend.dto.MqttResponses;
 
+import jakarta.validation.constraints.*;
+
 import java.util.Objects;
 
 
 
 public class MQTTTelemetryData {
 
+    @NotBlank(message = "vehicleId must not be blank")
     private String vin;
+
+    @Positive(message = "timestamp must be a positive value represented in millis")
     private long timestamp;
+
+    @Min(value = -90, message = "Latitude must be >= -90")
+    @Max(value = 90, message = "Latitude must be <= 90")
     private double lat;
+
+    @Min(value = -90, message = "Longitude must be >= -180")
+    @Max(value = 90, message = "Longitude must be <= 180")
     private double lng;
+
+    @PositiveOrZero(message = "Speed must be >= 0")
     private double speed;
 
 

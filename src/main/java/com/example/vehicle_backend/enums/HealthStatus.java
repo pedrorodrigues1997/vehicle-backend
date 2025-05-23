@@ -1,4 +1,4 @@
-package com.example.vehicle_backend.entities.vehicleStatus;
+package com.example.vehicle_backend.enums;
 
 public enum HealthStatus {
     OK,

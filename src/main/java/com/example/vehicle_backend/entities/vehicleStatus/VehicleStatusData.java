@@ -1,8 +1,8 @@
 package com.example.vehicle_backend.entities.vehicleStatus;
 
+import com.example.vehicle_backend.enums.HealthStatus;
 import jakarta.persistence.*;
 
-import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -16,10 +16,12 @@ public class VehicleStatusData {
     @Id
     private long timestamp;
 
+    @Enumerated(EnumType.STRING)
     private HealthStatus engineStatus;
     private double engineOilLevelPercent;
     private boolean engineCheckEngineLight;
 
+    @Enumerated(EnumType.STRING)
     private HealthStatus batteryStatus;
     private double batteryVoltage;
 
@@ -28,6 +30,7 @@ public class VehicleStatusData {
     private double tireRearLeftPsi;
     private double tireRearRightPsi;
 
+    @Enumerated(EnumType.STRING)
     private HealthStatus brakeStatus;
 
 

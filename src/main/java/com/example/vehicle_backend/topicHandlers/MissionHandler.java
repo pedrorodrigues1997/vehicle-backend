@@ -1,5 +1,6 @@
 package com.example.vehicle_backend.topicHandlers;
 
+import com.example.vehicle_backend.dto.MqttResponses.MQTTTelemetryData;
 import com.example.vehicle_backend.dto.MqttResponses.MQTTVehicleMissionStatus;
 import com.example.vehicle_backend.enums.MissionStatus;
 import com.example.vehicle_backend.entities.Location;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.validation.ConstraintViolation;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class MissionHandler {
 
@@ -28,7 +31,6 @@ public class MissionHandler {
     private final MissionRepository missionRepository;
     private final MqttClient mqttClient;
     private final ObjectMapper objectMapper;
-
 
 
     public MissionHandler(Mission mission, MissionRepository missionRepository, MqttClient mqttClient, ObjectMapper objectMapper) {
@@ -64,10 +66,13 @@ public class MissionHandler {
     public boolean handleVehicleResponse(String vehicleId, MqttMessage message) {
         try {
             String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-            System.out.println("[MissionHandler] Response from " + vehicleId + ": " + payload);
             MQTTVehicleMissionStatus statusPayload = objectMapper.readValue(payload, MQTTVehicleMissionStatus.class);
+            System.out.println("[MissionHandler] Response from " + vehicleId + ": " + statusPayload);
 
+
+            CommonDataValidator.validate(statusPayload);
             validateVehicleStatusPayload(statusPayload);
+
             Mission mission = missionRepository.findById(statusPayload.getMissionId())
                     .orElseThrow(() -> new IllegalArgumentException("Mission not found: " + statusPayload.getMissionId()));
 
@@ -90,13 +95,18 @@ public class MissionHandler {
             mission.setUpdatedAt(LocalDateTime.now(ZoneId.systemDefault()));
 
 
-            boolean isFinished = updateOverallMissionStatus(mission);
-            if(isFinished){
+            updateOverallMissionStatus(mission);
+            if (mission.getStatus() == MissionStatus.COMPLETED ||
+                    mission.getStatus() == MissionStatus.FAILED ||
+                    mission.getStatus() == MissionStatus.CANCELLED) {
+
                 mission.setEndTime(LocalDateTime.now(ZoneId.systemDefault()));
                 mission.setActive(false);
+                missionRepository.save(mission);
+
             }
             missionRepository.save(mission);
-            return isFinished;
+            return !mission.isActive();
 
         } catch (Exception e) {
             System.err.println("[MissionHandler] Error processing vehicle response: " + e.getMessage());
@@ -110,39 +120,33 @@ public class MissionHandler {
     private static void validateVehicleStatusPayload(MQTTVehicleMissionStatus statusPayload) {
         CommonDataValidator.validateVIN(statusPayload.getVin());
         CommonDataValidator.validateTimestamp(statusPayload.getTimestamp());
-        CommonDataValidator.validateLocation(statusPayload.getLocation());
-        CommonDataValidator.validateSpeed(statusPayload.getSpeed());
         if (statusPayload.getMissionId() == 0) {
-            throw new IllegalArgumentException("Invalid or missing manufacturer.");
+            throw new IllegalArgumentException("Invalid or missing missionId.");
         }
     }
 
     /**
      * Return value true means that the mission keeps ongoing
      * Return false means that it ended
+     *
      * @param mission
      * @return
      */
-    private static boolean updateOverallMissionStatus(Mission mission) {
+    private static void updateOverallMissionStatus(Mission mission) {
         List<VehicleMissionData> vehicleDataList = mission.getVehicleMissionDataList();
 
         if (vehicleDataList.stream().allMatch(v -> v.getStatus() == MissionStatus.COMPLETED)) {
             mission.setStatus(MissionStatus.COMPLETED);
-            return true;
         } else if (vehicleDataList.stream().allMatch(v -> v.getStatus() == MissionStatus.CANCELLED)) {
             mission.setStatus(MissionStatus.CANCELLED);
-            return true;
         } else if (vehicleDataList.stream().allMatch(v -> v.getStatus() == MissionStatus.FAILED)) {
             mission.setStatus(MissionStatus.FAILED);
-            return true;
-        } else if (vehicleDataList.stream().anyMatch(v -> v.getStatus() == MissionStatus.IN_PROGRESS)) {
-            mission.setStatus(MissionStatus.IN_PROGRESS);
-        } else if (vehicleDataList.stream().anyMatch(v -> v.getStatus() == MissionStatus.PENDING)) {
+        } else if (vehicleDataList.stream().allMatch(v -> v.getStatus() == MissionStatus.PENDING)) {
             mission.setStatus(MissionStatus.PENDING);
-        }else{
+        } else {
             mission.setStatus(MissionStatus.IN_PROGRESS);
         }
-        return false;
+
     }
 
     private String generateStartPayload(Long missionId, String vin) throws JsonProcessingException {
