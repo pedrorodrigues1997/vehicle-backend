@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class CommonDataValidator {
-    //TODO   Make this a validator for ALL. Instead of for the payload. Faz no aviao, valida cada campo individualmente
     private static final Pattern VIN_PATTERN = Pattern.compile("^car-\\d{3}$");
     private static final long ALLOWED_TIME_DIFF = 60000; //milliseconds
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -121,32 +120,6 @@ public class CommonDataValidator {
     }
 
 
-    public static void validateLocation(Location location) {
-        if (location.getLat() < -90 || location.getLat() > 90) {
-            throw new IllegalArgumentException("Invalid latitude");
-        }
-        if (location.getLng() < -180 || location.getLng() > 180) {
-            throw new IllegalArgumentException("Invalid longitude");
-        }
-    }
-
-    public static void validateSpeed(double speed) {
-        if (speed < 0 || speed >= 300) {
-            throw new IllegalArgumentException("Invalid speed");
-        }
-    }
-
-    public static void validateEngineTemp(double temperature) {
-        if (temperature < -36 || temperature >= 150) {
-            throw new IllegalArgumentException("Invalid engine temperature");
-        }
-    }
-
-    public static void validateFuelBatteryLevel(double fuelOrBattery) {
-        if (fuelOrBattery < 0 || fuelOrBattery > 100) {
-            throw new IllegalArgumentException("Invalid fuel or battery level");
-        }
-    }
 
 
     public static boolean isBlank(String str) {
