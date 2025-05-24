@@ -44,7 +44,6 @@ public class MQTTStatusData {
     @NotNull(message = "brakeStatus must be provided")
     private HealthStatus brakeStatus;
 
-    // Getters and setters
 
     public String getVehicleId() {
         return vehicleId;

@@ -122,13 +122,6 @@ public class MissionHandler {
         }
     }
 
-    /**
-     * Return value true means that the mission keeps ongoing
-     * Return false means that it ended
-     *
-     * @param mission
-     * @return
-     */
     private static void updateOverallMissionStatus(Mission mission) {
         List<VehicleMissionData> vehicleDataList = mission.getVehicleMissionDataList();
 

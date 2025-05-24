@@ -91,6 +91,14 @@ If for some reason the client disconnects, authentication is of course required 
 
 ### 1. Register a Vehicle
 
+Install the following python library so that the python scripts can connect to the EMQX Broker 
+    
+    pip install paho-mqtt
+
+Start running the backend program by running the following class
+
+    VehicleBackendApplication
+
 In **pythonMqttClients**, use **001Register.py** to simulate a vehicle registration.
 
 The backend is subscribed to the following topic
