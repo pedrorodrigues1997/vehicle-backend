@@ -1,22 +1,17 @@
 package com.example.vehicle_backend.services;
 
 import com.example.vehicle_backend.dto.MqttResponses.MQTTStatusData;
-import com.example.vehicle_backend.dto.MqttResponses.MQTTTelemetryData;
-import com.example.vehicle_backend.entities.Location;
-import com.example.vehicle_backend.entities.TelemetryData;
 import com.example.vehicle_backend.entities.vehicleStatus.VehicleStatusData;
-import com.example.vehicle_backend.repositories.TelemetryDataRepository;
 import com.example.vehicle_backend.repositories.VehicleRepository;
 import com.example.vehicle_backend.repositories.VehicleStatusRepository;
 import com.example.vehicle_backend.validators.CommonDataValidator;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 
 @Service
 public class VehicleStatusService {
@@ -48,7 +43,7 @@ public class VehicleStatusService {
     private VehicleStatusData toEntity(MQTTStatusData dto) {
         VehicleStatusData entity = new VehicleStatusData();
         entity.setVehicleId(dto.getVehicleId());
-        entity.setTimestamp(dto.getTimestamp());
+        entity.setTimestamp(LocalDateTime.ofInstant(Instant.ofEpochMilli(dto.getTimestamp()), ZoneId.systemDefault()));
         entity.setEngineStatus(dto.getEngineStatus());
         entity.setEngineOilLevelPercent(dto.getEngineOilLevelPercent());
         entity.setEngineCheckEngineLight(dto.isEngineCheckEngineLight());

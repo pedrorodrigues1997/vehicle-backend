@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 
 @Service
@@ -53,7 +55,7 @@ public class TelemetryService {
 
         TelemetryData entity = new TelemetryData();
         entity.setVin(dto.getVin());
-        entity.setTimestamp(Instant.ofEpochMilli(dto.getTimestamp()));
+        entity.setTimestamp(LocalDateTime.ofInstant(Instant.ofEpochMilli(dto.getTimestamp()), ZoneId.systemDefault()));
         entity.setLocation(location);
         entity.setSpeed(dto.getSpeed());
         return entity;

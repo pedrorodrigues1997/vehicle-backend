@@ -1,16 +1,17 @@
 package com.example.vehicle_backend.entities.vehicleStatus;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class VehicleStatusDataId implements Serializable {
 
     private String vehicleId;
-    private long timestamp;
+    private LocalDateTime timestamp;
 
     public VehicleStatusDataId() {}
 
-    public VehicleStatusDataId(String vehicleId, long timestamp) {
+    public VehicleStatusDataId(String vehicleId, LocalDateTime timestamp) {
         this.vehicleId = vehicleId;
         this.timestamp = timestamp;
     }

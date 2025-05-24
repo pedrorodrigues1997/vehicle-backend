@@ -1,6 +1,5 @@
 package com.example.vehicle_backend.topicHandlers;
 
-import com.example.vehicle_backend.dto.MqttResponses.MQTTTelemetryData;
 import com.example.vehicle_backend.dto.MqttResponses.MQTTVehicleMissionStatus;
 import com.example.vehicle_backend.enums.MissionStatus;
 import com.example.vehicle_backend.entities.Location;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import jakarta.validation.ConstraintViolation;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -22,7 +20,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class MissionHandler {
 
@@ -70,24 +67,25 @@ public class MissionHandler {
             System.out.println("[MissionHandler] Response from " + vehicleId + ": " + statusPayload);
 
 
-            CommonDataValidator.validate(statusPayload);
-            validateVehicleStatusPayload(statusPayload);
-
             Mission mission = missionRepository.findById(statusPayload.getMissionId())
                     .orElseThrow(() -> new IllegalArgumentException("Mission not found: " + statusPayload.getMissionId()));
 
-            //We should only receive data from vehicles that are assigned to the mission
+            CommonDataValidator.validate(statusPayload);
+            validateVehicleStatusPayload(statusPayload, mission);
+
+            //We should only receive data from or about vehicles that are assigned to the mission
             VehicleMissionData vehicleData = mission.getVehicleMissionDataList().stream()
                     .filter(v -> v.getVehicleId().equals(vehicleId))
+                    .filter(v -> v.getVehicleId().equals(statusPayload.getVin()))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "Vehicle " + vehicleId + " is not assigned to mission " + mission.getMissionId()));
+                            "Message from vehicle " + vehicleId + " fails. Either the vehicle is not assigned to mission " + mission.getMissionId() + " or the information in the payload is not about him."));
 
             CommonDataValidator.validateStatusProgression(vehicleData.getStatus(), statusPayload.getStatus());
 
 
             vehicleData.setStatus(statusPayload.getStatus());
-            vehicleData.setLastUpdateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(statusPayload.getTimestamp()), ZoneId.systemDefault()));
+            vehicleData.setLastUpdateTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(statusPayload.getTimestamp()), ZoneId.systemDefault()));
             vehicleData.setSpeed(statusPayload.getSpeed());
             vehicleData.setLocation(statusPayload.getLocation());
 
@@ -102,11 +100,10 @@ public class MissionHandler {
 
                 mission.setEndTime(LocalDateTime.now(ZoneId.systemDefault()));
                 mission.setActive(false);
-                missionRepository.save(mission);
-
             }
+
             missionRepository.save(mission);
-            return !mission.isActive();
+
 
         } catch (Exception e) {
             System.err.println("[MissionHandler] Error processing vehicle response: " + e.getMessage());
@@ -114,10 +111,10 @@ public class MissionHandler {
             e.printStackTrace();
         }
 
-        return true;  //If the data is not valid somewhere im assuming the mission failed
+        return mission.isActive();  //If the data is not valid somewhere im assuming the mission failed
     }
 
-    private static void validateVehicleStatusPayload(MQTTVehicleMissionStatus statusPayload) {
+    private static void validateVehicleStatusPayload(MQTTVehicleMissionStatus statusPayload, Mission mission) {
         CommonDataValidator.validateVIN(statusPayload.getVin());
         CommonDataValidator.validateTimestamp(statusPayload.getTimestamp());
         if (statusPayload.getMissionId() == 0) {

@@ -2,15 +2,16 @@ package com.example.vehicle_backend.entities;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class TelemetryId implements Serializable {
     private String vin;
-    private Instant timestamp;
+    private LocalDateTime timestamp;
 
     public TelemetryId() {}
 
-    public TelemetryId(String vin, Instant timestamp) {
+    public TelemetryId(String vin, LocalDateTime timestamp) {
         this.vin = vin;
         this.timestamp = timestamp;
     }

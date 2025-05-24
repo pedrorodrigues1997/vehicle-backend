@@ -3,6 +3,7 @@ package com.example.vehicle_backend.entities;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @IdClass(TelemetryId.class)
@@ -14,7 +15,7 @@ public class TelemetryData {
     @Id
     private String vin;
     @Id
-    private Instant timestamp;
+    private LocalDateTime timestamp;
     //Id is composed of vin and timestamp
 
     @Embedded
@@ -32,11 +33,11 @@ public class TelemetryData {
         this.vin = vin;
     }
 
-    public Instant getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Instant timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 

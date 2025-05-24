@@ -37,12 +37,10 @@ def create_client(car):
 def generate_telemetry_data(vin):
     return {
         "vin": vin,
+        "timestamp": int(time.time() * 1000),
         "lat": round(random.uniform(40.0, 41.0), 6),
         "lng": round(random.uniform(-75.0, -73.0), 6),
-        "speed": round(random.uniform(20, 100), 2),
-        "timestamp": int(time.time() * 1000),
-        "potatoes": int(time.time() * 1000)
-
+        "speed": round(random.uniform(20, 100), 2)
     }
 
 def publish_telemetry(client, topic, telemetry_data):

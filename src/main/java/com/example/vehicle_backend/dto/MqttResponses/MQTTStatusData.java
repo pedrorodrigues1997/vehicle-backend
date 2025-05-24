@@ -3,6 +3,8 @@ package com.example.vehicle_backend.dto.MqttResponses;
 import com.example.vehicle_backend.enums.HealthStatus;
 import jakarta.validation.constraints.*;
 
+import java.util.Objects;
+
 
 public class MQTTStatusData {
 
@@ -138,6 +140,37 @@ public class MQTTStatusData {
 
     public void setBrakeStatus(HealthStatus brakeStatus) {
         this.brakeStatus = brakeStatus;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        MQTTStatusData that = (MQTTStatusData) o;
+        return timestamp == that.timestamp && Double.compare(engineOilLevelPercent, that.engineOilLevelPercent) == 0 && engineCheckEngineLight == that.engineCheckEngineLight && Double.compare(batteryVoltage, that.batteryVoltage) == 0 && Double.compare(tireFrontLeftPsi, that.tireFrontLeftPsi) == 0 && Double.compare(tireFrontRightPsi, that.tireFrontRightPsi) == 0 && Double.compare(tireRearLeftPsi, that.tireRearLeftPsi) == 0 && Double.compare(tireRearRightPsi, that.tireRearRightPsi) == 0 && Objects.equals(vehicleId, that.vehicleId) && engineStatus == that.engineStatus && batteryStatus == that.batteryStatus && brakeStatus == that.brakeStatus;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(vehicleId, timestamp, engineStatus, engineOilLevelPercent, engineCheckEngineLight, batteryStatus, batteryVoltage, tireFrontLeftPsi, tireFrontRightPsi, tireRearLeftPsi, tireRearRightPsi, brakeStatus);
+    }
+
+    @Override
+    public String toString() {
+        return "MQTTStatusData{" +
+                "vehicleId='" + vehicleId + '\'' +
+                ", timestamp=" + timestamp +
+                ", engineStatus=" + engineStatus +
+                ", engineOilLevelPercent=" + engineOilLevelPercent +
+                ", engineCheckEngineLight=" + engineCheckEngineLight +
+                ", batteryStatus=" + batteryStatus +
+                ", batteryVoltage=" + batteryVoltage +
+                ", tireFrontLeftPsi=" + tireFrontLeftPsi +
+                ", tireFrontRightPsi=" + tireFrontRightPsi +
+                ", tireRearLeftPsi=" + tireRearLeftPsi +
+                ", tireRearRightPsi=" + tireRearRightPsi +
+                ", brakeStatus=" + brakeStatus +
+                '}';
     }
 }
 

@@ -31,7 +31,7 @@ def main():
     client.loop_start()
 
     registration_data = {
-        "vin": "car-004",
+        "vin": "car-005",
         "model": "Model S",
         "manufacturer": "Tesla",
         "firmwareVersion": "v10.2.1",

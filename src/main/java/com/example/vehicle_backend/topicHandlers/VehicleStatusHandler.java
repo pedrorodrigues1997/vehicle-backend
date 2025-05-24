@@ -1,10 +1,8 @@
 package com.example.vehicle_backend.topicHandlers;
 
 import com.example.vehicle_backend.dto.MqttResponses.MQTTStatusData;
-import com.example.vehicle_backend.dto.MqttResponses.MQTTTelemetryData;
-import com.example.vehicle_backend.repositories.VehicleRepository;
-import com.example.vehicle_backend.services.TelemetryService;
 import com.example.vehicle_backend.services.VehicleStatusService;
+import com.example.vehicle_backend.validators.CommonDataValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,7 @@ public class VehicleStatusHandler implements MqttMessageHandler{
 
 
     @Autowired
-    public VehicleStatusHandler(VehicleRepository vehicleRepository, VehicleStatusService statusService) {
+    public VehicleStatusHandler(VehicleStatusService statusService) {
         this.statusService = statusService;
     }
 
@@ -47,6 +45,7 @@ public class VehicleStatusHandler implements MqttMessageHandler{
 
             MQTTStatusData status = objectMapper.readValue(payload, MQTTStatusData.class);
             System.out.printf("Received Status Data: " + status);
+            CommonDataValidator.validateVIN(status.getVehicleId());
 
             if (!vinFromTopic.equals(status.getVehicleId())) {
                 System.out.printf("VIN mismatch: topic VIN '%s' vs payload VIN '%s'%n", vinFromTopic, status.getVehicleId());

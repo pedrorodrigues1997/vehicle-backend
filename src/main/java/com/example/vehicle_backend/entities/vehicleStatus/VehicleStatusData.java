@@ -3,6 +3,7 @@ package com.example.vehicle_backend.entities.vehicleStatus;
 import com.example.vehicle_backend.enums.HealthStatus;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -14,7 +15,7 @@ public class VehicleStatusData {
     private String vehicleId;
 
     @Id
-    private long timestamp;
+    private LocalDateTime timestamp;
 
     @Enumerated(EnumType.STRING)
     private HealthStatus engineStatus;
@@ -42,11 +43,11 @@ public class VehicleStatusData {
         this.vehicleId = vehicleId;
     }
 
-    public long getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 

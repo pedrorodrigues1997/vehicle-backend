@@ -70,7 +70,7 @@ public class RegisterService {
         vehicle.setManufacturer(validatedReq.getManufacturer());
         vehicle.setMqttToken(hashedToken);
         vehicle.setHardwareId(validatedReq.getHardwareId());
-        vehicle.setRegisteredAt(LocalDateTime.ofInstant(Instant.ofEpochSecond(validatedReq.getTimestamp()), ZoneId.systemDefault()));
+        vehicle.setRegisteredAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(validatedReq.getTimestamp()), ZoneId.systemDefault()));
         vehicle.setFirmwareVersion(validatedReq.getFirmwareVersion());
         return vehicle;
     }

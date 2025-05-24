@@ -10,6 +10,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 @Service
@@ -45,7 +46,7 @@ public class MissionManager {
 
         MissionHandler handler = activeMissions.get(missionId);
         if (handler != null) {
-            if(handler.handleVehicleResponse(vehicleId, message)){
+            if(!handler.handleVehicleResponse(vehicleId, message)){
                 System.out.println("Mission "+ missionId +" Ending: Starting the Unregister process");
                 unregisterMissionHandler(missionId);
             }
